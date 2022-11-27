@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Numerics;
 using Conclave.EVM;
 using Milkomeda.Bridge.Sharp.Models;
 using Nethereum.Hex.HexTypes;
@@ -7,6 +8,7 @@ using Nethereum.UI;
 using Nethereum.Web3;
 
 namespace Milkomeda.Bridge.Sharp.Services;
+
 
 public class MilkomedaService
 {
@@ -18,6 +20,8 @@ public class MilkomedaService
     private string? Erc20Abi { get; set; }
     private string? SidechainBridgeAbi { get; set; }
 
+    public event Func<string, Task>? SelectedAccountChanged;
+    
     public MilkomedaService(
         IConfiguration configuration,
         HttpClient httpClient,
@@ -30,6 +34,12 @@ public class MilkomedaService
         _configuration = configuration;
         _STARGATE_URL = configuration["StargateUrl"] ?? "https://allowedlist-service.herokuapp.com/v1/stargate";
         _httpClient = httpClient;
+
+        _ethereumHostProvider.SelectedAccountChanged += async (walletAddress) =>
+        {
+            if (SelectedAccountChanged is not null)
+                await SelectedAccountChanged.Invoke(walletAddress);
+        };
     }
 
     public async Task<StargateResponse?> GetStargateDataAsync()
@@ -37,38 +47,38 @@ public class MilkomedaService
 
     public async Task<string> ConnectWalletAsync()
     {
-        await LoadEvmServiceWeb3Async();
-        if (_evmService.Web3 is not null)
-        {
-            _evmService.Web3.TransactionManager.UseLegacyAsDefault = true;
-            _evmService.Web3.TransactionManager.EstimateOrSetDefaultGasIfNotSet = false;
-            _evmService.Web3.TransactionManager.CalculateOrSetDefaultGasPriceFeesIfNotSet = false;
 
-            return _evmService.Web3.TransactionManager.Account != null ? _evmService.Web3.TransactionManager.Account.Address :
-                await _ethereumHostProvider.GetProviderSelectedAccountAsync();
-        }
-        else throw new NullReferenceException("Web3 is null.");
+        var connectResult = await _ethereumHostProvider.CheckProviderAvailabilityAsync();
+        await _ethereumHostProvider.EnableProviderAsync();
+        var metamaskWeb3 = await _ethereumHostProvider.GetWeb3Async();
+        _evmService.Web3 = metamaskWeb3;
+        _evmService.Web3.TransactionManager.UseLegacyAsDefault = true;
+        _evmService.Web3.TransactionManager.EstimateOrSetDefaultGasIfNotSet = false;
+        _evmService.Web3.TransactionManager.CalculateOrSetDefaultGasPriceFeesIfNotSet = false;
+
+        return _evmService.Web3.TransactionManager.Account != null ? _evmService.Web3.TransactionManager.Account.Address :
+            await _ethereumHostProvider.GetProviderSelectedAccountAsync();
     }
 
     public async Task<decimal> GetErc20Balance(string contractAddress, string walletAddress)
     {
         (string abi, _) = await LoadAbisAsync();
-        await LoadEvmServiceWeb3Async();
-        HexBigInteger balanceInWei = await _evmService.CallContractReadFunctionAsync<HexBigInteger>(contractAddress, abi, "balanceOf", walletAddress);
+        LoadEvmServiceWeb3();
+        BigInteger balanceInWei = await _evmService.CallContractReadFunctionAsync<BigInteger>(contractAddress, abi, "balanceOf", walletAddress);
         return Web3.Convert.FromWei(balanceInWei);
     }
 
     public async Task<string> GetErc20Name(string contractAddress)
     {
         (string abi, _) = await LoadAbisAsync();
-        await LoadEvmServiceWeb3Async();
+        LoadEvmServiceWeb3();
         return await _evmService.CallContractReadFunctionAsync<string>(contractAddress, abi, "name");
     }
 
     public async Task<string> GetErc20Symbol(string contractAddress)
     {
         (string abi, _) = await LoadAbisAsync();
-        await LoadEvmServiceWeb3Async();
+        LoadEvmServiceWeb3();
         return await _evmService.CallContractReadFunctionAsync<string>(contractAddress, abi, "symbol");
     }
 
@@ -88,16 +98,9 @@ public class MilkomedaService
         return (Erc20Abi, SidechainBridgeAbi);
     }
 
-    private async Task LoadEvmServiceWeb3Async()
+    private void LoadEvmServiceWeb3()
     {
-        var connectResult = await _ethereumHostProvider.CheckProviderAvailabilityAsync();
-        await _ethereumHostProvider.EnableProviderAsync();
-
-        var metamaskWeb3 = await _ethereumHostProvider.GetWeb3Async();
-
-        if (metamaskWeb3 is null)
+        if (_evmService.Web3 is null)
             _evmService.Web3 = new Web3(_configuration["MilkomedaRpcUrl"]);
-        else
-            _evmService.Web3 = metamaskWeb3;
     }
 }

@@ -8,7 +8,7 @@
     <MudSpacer />
     <div class="flex gap-2">
         <MudButton Variant="Variant.Outlined" Class="flex" EndIcon="@MilkomedaBridgeIcons.EthereumIcon"
-            OnClick="OnBtnConnectMilkomedaClicked">
+            OnClick="OnBtnConnectMilkomedaClickedAsync">
             @if (string.IsNullOrEmpty(MilkomedaAddress))
             {
                 <MudText>Connect to Milkomeda</MudText>
@@ -26,7 +26,16 @@
 
 <div class="grid gap-2 grid-cols-12 grid-rows-3">
     <div class="col-start-1 col-start-6" />
-    <MudCard Class="col-start-4 col-end-10">
+    <MudCard Class="col-start-4 col-end-10 relative">
+        @if (IsLoading)
+        {
+            <MudCard class="w-[100%] h-[100%] absolute z-100 flex items-center">
+                <div class="flex flex-col w-[100%] text-center">
+                    <MudProgressCircular Class="mx-auto align-middle" Color="Color.Primary" Indeterminate="true" />
+                    <MudText>loading please wait...</MudText>
+                </div>
+            </MudCard>
+        }
         <MudCardContent>
             <MudText Class="text-xl font-bold subpixel-antialiased">Select a token to bridge</MudText>
             <MudText Class="text-sm">Having Issues? Get Help!</MudText>
@@ -53,8 +62,15 @@
                     }
                 </MudSelect>
             </div>
-            <div class="flex mt-2 gap-2">
-                <MudButton>Balance: 0.000000</MudButton>
+            <div class="flex mt-2 gap-4">
+                @if (UserAssetBalances.ContainsKey(SelectedCardanoAsset))
+                {
+                    <MudButton>Balance: @UserAssetBalances[SelectedCardanoAsset]</MudButton>
+                }
+                else
+                {
+                    <MudButton>Balance: 0.00</MudButton>
+                }
                 <MudSpacer />
                 <MudButton Variant="Variant.Filled" Color="Color.Primary">Max</MudButton>
             </div>

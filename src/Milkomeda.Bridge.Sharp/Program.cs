@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Conclave.EVM;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -18,4 +19,5 @@ builder.Services.AddScoped<IMetamaskInterop, MetamaskBlazorInterop>();
 builder.Services.AddScoped<MetamaskInterceptor>();
 builder.Services.AddScoped<MetamaskHostProvider>();
 builder.Services.AddScoped<EvmService>();
+builder.Services.AddBlazoredLocalStorage();
 await builder.Build().RunAsync();
