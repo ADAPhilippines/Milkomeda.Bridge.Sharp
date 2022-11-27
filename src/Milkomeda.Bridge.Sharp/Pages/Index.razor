@@ -2,15 +2,66 @@
 
 <PageTitle>Milkomeda Bridge dApp</PageTitle>
 
-<div class="grid gap-2 grid-cols-6 grid-rows-3">
+<MudAppBar Color="Color.Primary" Fixed="false">
+    <MudText>Milkomeda Bridge dApp</MudText>
+    <MudSpacer />
+    <div class="flex gap-2">
+        <MudButton Variant="Variant.Outlined" class="flex" EndIcon="@MilkomedaBridgeIcons.EthereumIcon">
+            <MudText>Connect to Milkomeda</MudText>
+        </MudButton>
+        <MudButton Variant="Variant.Outlined" class="flex" EndIcon="@MilkomedaBridgeIcons.CardanoIcon">
+            <MudText>Connect to Cardano</MudText>
+        </MudButton>
+    </div>
+</MudAppBar>
+
+<div class="grid gap-2 grid-cols-12 grid-rows-3">
     <div class="col-start-1 col-start-6" />
-    <MudCard Class="col-start-3 col-end-5">
+    <MudCard Class="col-start-4 col-end-10">
         <MudCardContent>
-            <MudText>Story of the day</MudText>
-            <MudText Typo="Typo.body2">The quick, brown fox jumps over a lazy dog.</MudText>
+            <MudText Class="text-xl font-bold subpixel-antialiased">Select token to bridge</MudText>
+            <MudText Class="text-sm">Having Issues? Get Help!</MudText>
+            <div class="mt-2 grid grid-cols-3">
+                <MudButton StartIcon="@MilkomedaBridgeIcons.MilkomedaIcon">Milkomeda</MudButton>
+                <div class="flex justify-center">
+                    <MudFab StartIcon="@Icons.Filled.CompareArrows" Color="Color.Primary" DisableElevation="true" />
+                </div>
+                <MudButton StartIcon="@MilkomedaBridgeIcons.CardanoBlueIcon">Cardano</MudButton>
+            </div>
+            <div class="flex">
+                <MudTextField Class="basis-3/4" Value=@(0) InputType="InputType.Number" Label="Amount" Variant="Variant.Outlined"></MudTextField>
+                <MudSelect Class="basis-1/4" T="string" Label="Token" Variant="Variant.Outlined"
+                    AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Value="@("Austria")">
+                        <div class="flex gap-1">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_Austria.svg"
+                                class="w-[24px]" />
+                            <MudText>Austria</MudText>
+                        </div>
+                    </MudSelectItem>
+                    <MudSelectItem Value="@("Hungary")">
+                        <div class="flex gap-1">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Hungary.png"
+                                class="w-[24px]" />
+                            <MudText>Hungry</MudText>
+                        </div>
+                    </MudSelectItem>
+                    <MudSelectItem Value="@("Sweden")">
+                        <div class="flex gap-1">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Flag_of_Sweden_fixed.svg"
+                                class="w-[24px]" />
+                            <MudText>Sweden</MudText>
+                        </div>
+                    </MudSelectItem>
+                </MudSelect>
+            </div>
         </MudCardContent>
         <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary">Learn More</MudButton>
+            <div class="flex justify-center w-[100%]">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Outlined.LabelImportant">
+                    Transfer
+                </MudButton>
+            </div>
         </MudCardActions>
     </MudCard>
 </div>
