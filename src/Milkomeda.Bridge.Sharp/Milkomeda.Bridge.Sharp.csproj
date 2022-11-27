@@ -14,6 +14,7 @@
     <PackageReference Include="Conclave.EVM" Version="0.0.1" />
     <PackageReference Include="Conclave.Nethereum.Metamask.Blazor" Version="4.11.0" />
     <PackageReference Include="Conclave.Nethereum.Web3" Version="4.11.0" />
+    <PackageReference Include="System.Net.Http.Json" Version="7.0.0" />
   </ItemGroup>
 
 </Project>

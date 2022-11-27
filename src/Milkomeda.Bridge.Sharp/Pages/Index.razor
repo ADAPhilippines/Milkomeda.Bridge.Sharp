@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using Models
 
 <PageTitle>Milkomeda Bridge dApp</PageTitle>
 
@@ -6,10 +7,18 @@
     <MudText>Milkomeda Bridge dApp</MudText>
     <MudSpacer />
     <div class="flex gap-2">
-        <MudButton Variant="Variant.Outlined" class="flex" EndIcon="@MilkomedaBridgeIcons.EthereumIcon">
-            <MudText>Connect to Milkomeda</MudText>
+        <MudButton Variant="Variant.Outlined" Class="flex" EndIcon="@MilkomedaBridgeIcons.EthereumIcon"
+            OnClick="OnBtnConnectMilkomedaClicked">
+            @if (string.IsNullOrEmpty(MilkomedaAddress))
+            {
+                <MudText>Connect to Milkomeda</MudText>
+            }
+            else
+            {
+                <MudText>Connected: @MilkomedaAddress.Substring(1,6) ...</MudText>
+            }
         </MudButton>
-        <MudButton Variant="Variant.Outlined" class="flex" EndIcon="@MilkomedaBridgeIcons.CardanoIcon">
+        <MudButton Variant="Variant.Outlined" Class="flex" EndIcon="@MilkomedaBridgeIcons.CardanoIcon">
             <MudText>Connect to Cardano</MudText>
         </MudButton>
     </div>
@@ -19,7 +28,7 @@
     <div class="col-start-1 col-start-6" />
     <MudCard Class="col-start-4 col-end-10">
         <MudCardContent>
-            <MudText Class="text-xl font-bold subpixel-antialiased">Select token to bridge</MudText>
+            <MudText Class="text-xl font-bold subpixel-antialiased">Select a token to bridge</MudText>
             <MudText Class="text-sm">Having Issues? Get Help!</MudText>
             <div class="mt-2 grid grid-cols-3">
                 <MudButton StartIcon="@MilkomedaBridgeIcons.MilkomedaIcon">Milkomeda</MudButton>
@@ -29,31 +38,25 @@
                 <MudButton StartIcon="@MilkomedaBridgeIcons.CardanoBlueIcon">Cardano</MudButton>
             </div>
             <div class="flex">
-                <MudTextField Class="basis-3/4" Value=@(0) InputType="InputType.Number" Label="Amount" Variant="Variant.Outlined"></MudTextField>
-                <MudSelect Class="basis-1/4" T="string" Label="Token" Variant="Variant.Outlined"
-                    AnchorOrigin="Origin.BottomCenter">
-                    <MudSelectItem Value="@("Austria")">
-                        <div class="flex gap-1">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_Austria.svg"
-                                class="w-[24px]" />
-                            <MudText>Austria</MudText>
-                        </div>
-                    </MudSelectItem>
-                    <MudSelectItem Value="@("Hungary")">
-                        <div class="flex gap-1">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Hungary.png"
-                                class="w-[24px]" />
-                            <MudText>Hungry</MudText>
-                        </div>
-                    </MudSelectItem>
-                    <MudSelectItem Value="@("Sweden")">
-                        <div class="flex gap-1">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Flag_of_Sweden_fixed.svg"
-                                class="w-[24px]" />
-                            <MudText>Sweden</MudText>
-                        </div>
-                    </MudSelectItem>
+                <MudTextField Class="basis-3/4" Value=@(0) InputType="InputType.Number" Label="Amount"
+                    Variant="Variant.Outlined"></MudTextField>
+                <MudSelect Class="basis-1/4" T="CardanoAsset" Label="Token" Variant="Variant.Outlined"
+                    AnchorOrigin="Origin.BottomCenter" @bind-Value="SelectedCardanoAsset">
+                    @foreach (CardanoAsset asset in BridgeAssets)
+                    {
+                        <MudSelectItem Value="asset">
+                            <div class="flex gap-1">
+                                @* <MudIcon Icon="@MilkomedaBridgeIcons.CardanoBlueIcon" /> *@
+                                <MudText>@asset.Symbol</MudText>
+                            </div>
+                        </MudSelectItem>
+                    }
                 </MudSelect>
+            </div>
+            <div class="flex mt-2 gap-2">
+                <MudButton>Balance: 0.000000</MudButton>
+                <MudSpacer />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary">Max</MudButton>
             </div>
         </MudCardContent>
         <MudCardActions>
