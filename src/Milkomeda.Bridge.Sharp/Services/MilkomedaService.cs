@@ -1,7 +1,9 @@
 using System.Net.Http.Json;
 using System.Numerics;
+using System.Text.Json;
 using Conclave.EVM;
 using Milkomeda.Bridge.Sharp.Models;
+using Nethereum.Hex.HexConvertors.Extensions;
 using Nethereum.Hex.HexTypes;
 using Nethereum.Metamask;
 using Nethereum.UI;
@@ -21,7 +23,7 @@ public class MilkomedaService
     private string? SidechainBridgeAbi { get; set; }
 
     public event Func<string, Task>? SelectedAccountChanged;
-    
+
     public MilkomedaService(
         IConfiguration configuration,
         HttpClient httpClient,
@@ -89,6 +91,37 @@ public class MilkomedaService
         return Web3.Convert.FromWei(balanceInWei);
     }
 
+    public async Task SendBaseTokenAsync(string from, string to, decimal amount, BigInteger gasLimit)
+    {
+        LoadEvmServiceWeb3();
+        await _evmService.SendBaseTokenAsync(amount, from, to, gasLimit);
+    }
+
+    public async Task UnwrapMilkAdaAsync(string contractAddress, string from, string to, string assetId, decimal amount)
+    {
+        (_, string abi) = await LoadAbisAsync();
+        await _evmService.CallContractWriteFunctionAsync(
+            contractAddress,
+            from,
+            abi,
+            amount + 1,
+            "submitUnwrappingRequest",
+            new UnwrapRequest
+            {
+                AssetId = GetBytes(assetId),
+                From = from,
+                To = System.Text.UTF8Encoding.UTF8.GetBytes(to),
+                Amount = Web3.Convert.ToWei(amount)
+            }
+        );
+    }
+
+    private byte[] GetBytes(string str)
+    {
+        byte[] bytes = new byte[str.Length * sizeof(char)];
+        System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+        return bytes;
+    }
     private async Task<(string, string)> LoadAbisAsync()
     {
         if (Erc20Abi is null)

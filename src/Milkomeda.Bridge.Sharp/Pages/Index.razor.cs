@@ -15,6 +15,9 @@ partial class Index
     [Inject]
     public ILocalStorageService? LocalStorage { get; set; }
 
+    [Inject]
+    public IConfiguration? Configuration { get; set; }
+
     private StargateResponse? MilkomedaStargateData { get; set; }
     private ICollection<CardanoAsset> BridgeAssets { get; set; } = new List<CardanoAsset>();
     private string? MilkomedaAddress { get; set; }
@@ -27,8 +30,8 @@ partial class Index
 
     private bool IsMilkomedaConnected => !string.IsNullOrEmpty(MilkomedaAddress);
     private bool IsLoading { get; set; }
-
     private Dictionary<CardanoAsset, decimal> UserAssetBalances { get; set; } = new Dictionary<CardanoAsset, decimal>();
+    private decimal AmountToSend { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,7 +64,6 @@ partial class Index
         }
 
         // Check local storage and rerender UI
-        Console.WriteLine(await LocalStorage.GetItemAsync<bool>("isMilkomedaConnected"));
         if (await LocalStorage.GetItemAsync<bool>("isMilkomedaConnected"))
             await OnBtnConnectMilkomedaClickedAsync();
 
@@ -114,6 +116,29 @@ partial class Index
             UserAssetBalances.Clear();
         }
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnTransferClickedAsync()
+    {
+        try
+        {
+            ArgumentNullException.ThrowIfNull(Configuration);
+            ArgumentNullException.ThrowIfNull(MilkomedaAddress);
+            ArgumentNullException.ThrowIfNull(MilkomedaService);
+            string? bridgeAddress = Configuration["MilkomedaEvmBridgeAddress"];
+            if (bridgeAddress is not null)
+                await MilkomedaService.UnwrapMilkAdaAsync(
+                    bridgeAddress,
+                    MilkomedaAddress,
+                    "addr_test1qrnrqg4s73skqfyyj69mzr7clpe8s7ux9t8z6l55x2f2xuqra34p9pswlrq86nq63hna7p4vkrcrxznqslkta9eqs2nsmlqvnk",
+                    SelectedCardanoAsset.MainchainId,
+                    AmountToSend
+                );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
     }
 
 }

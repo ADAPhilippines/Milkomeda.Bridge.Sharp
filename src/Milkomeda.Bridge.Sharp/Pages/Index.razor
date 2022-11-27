@@ -47,7 +47,7 @@
                 <MudButton StartIcon="@MilkomedaBridgeIcons.CardanoBlueIcon">Cardano</MudButton>
             </div>
             <div class="flex">
-                <MudTextField Class="basis-3/4" Value=@(0) InputType="InputType.Number" Label="Amount"
+                <MudTextField Class="basis-3/4" @bind-Value="AmountToSend" InputType="InputType.Number" Label="Amount"
                     Variant="Variant.Outlined"></MudTextField>
                 <MudSelect Class="basis-1/4" T="CardanoAsset" Label="Token" Variant="Variant.Outlined"
                     AnchorOrigin="Origin.BottomCenter" @bind-Value="SelectedCardanoAsset">
@@ -77,7 +77,7 @@
         </MudCardContent>
         <MudCardActions>
             <div class="flex justify-center w-[100%]">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Outlined.LabelImportant">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Outlined.LabelImportant" OnClick="OnTransferClickedAsync">
                     Transfer
                 </MudButton>
             </div>
