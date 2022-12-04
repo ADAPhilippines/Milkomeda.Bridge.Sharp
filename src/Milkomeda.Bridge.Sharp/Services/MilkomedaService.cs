@@ -70,18 +70,41 @@ public class MilkomedaService
         return Web3.Convert.FromWei(balanceInWei);
     }
 
-    public async Task<string> GetErc20Name(string contractAddress)
+    public async Task<string> GetErc20NameAsync(string contractAddress)
     {
         (string abi, _) = await LoadAbisAsync();
         LoadEvmServiceWeb3();
         return await _evmService.CallContractReadFunctionAsync<string>(contractAddress, abi, "name");
     }
 
-    public async Task<string> GetErc20Symbol(string contractAddress)
+    public async Task<string> GetErc20SymbolAsync(string contractAddress)
     {
         (string abi, _) = await LoadAbisAsync();
         LoadEvmServiceWeb3();
         return await _evmService.CallContractReadFunctionAsync<string>(contractAddress, abi, "symbol");
+    }
+
+    public async Task<int> GetErc20DecimalsAsync(string contractAddress)
+    {
+        (string abi, _) = await LoadAbisAsync();
+        LoadEvmServiceWeb3();
+        return await _evmService.CallContractReadFunctionAsync<int>(contractAddress, abi, "decimals");
+    }
+
+    public async Task ApprovaErc20Async(string contractAddress, string from, string to, decimal amount)
+    {
+        (string abi, _) = await LoadAbisAsync();
+        LoadEvmServiceWeb3();
+        int decimals = await GetErc20DecimalsAsync(contractAddress);
+        await _evmService.CallContractWriteFunctionAsync(
+            contractAddress,
+            from,
+            abi,
+            0,
+            "approve",
+            to,
+            Web3.Convert.ToWei(amount, decimals)
+        );
     }
 
     public async Task<decimal> GetMilkomedaBalance(string walletAddress)
@@ -97,7 +120,7 @@ public class MilkomedaService
         await _evmService.SendBaseTokenAsync(amount, from, to, gasLimit);
     }
 
-    public async Task UnwrapMilkAdaAsync(string contractAddress, string from, string to, string assetId, decimal amount)
+    public async Task UnwrapMilkAdaAsync(string contractAddress, string from, string to, decimal amount)
     {
         (_, string abi) = await LoadAbisAsync();
         await _evmService.CallContractWriteFunctionAsync(
@@ -108,10 +131,29 @@ public class MilkomedaService
             "submitUnwrappingRequest",
             new UnwrapRequest
             {
-                AssetId = GetBytes(assetId),
+                AssetId = string.Empty.HexToByteArray(),
                 From = from,
                 To = System.Text.UTF8Encoding.UTF8.GetBytes(to),
                 Amount = Web3.Convert.ToWei(amount)
+            }
+        );
+    }
+
+    public async Task UnwrapMilkTokenAsync(string contractAddress, string from, string to, string assetId, decimal amount, int decimals)
+    {
+        (_, string abi) = await LoadAbisAsync();
+        await _evmService.CallContractWriteFunctionAsync(
+            contractAddress,
+            from,
+            abi,
+            4,
+            "submitUnwrappingRequest",
+            new UnwrapRequest
+            {
+                AssetId = assetId.HexToByteArray(),
+                From = from,
+                To = System.Text.UTF8Encoding.UTF8.GetBytes(to),
+                Amount = Web3.Convert.ToWei(amount, decimals)
             }
         );
     }
@@ -122,6 +164,7 @@ public class MilkomedaService
         System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
         return bytes;
     }
+
     private async Task<(string, string)> LoadAbisAsync()
     {
         if (Erc20Abi is null)

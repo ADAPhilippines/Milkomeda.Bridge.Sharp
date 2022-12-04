@@ -8,7 +8,7 @@
     <MudSpacer />
     <div class="flex gap-2">
         <MudButton Variant="Variant.Outlined" Class="flex" EndIcon="@MilkomedaBridgeIcons.EthereumIcon"
-            OnClick="OnBtnConnectMilkomedaClickedAsync">
+            OnClick="OnBtnConnectMilkomedaClickedAsync" Disabled="IsLoading">
             @if (string.IsNullOrEmpty(MilkomedaAddress))
             {
                 <MudText>Connect to Milkomeda</MudText>
@@ -18,15 +18,14 @@
                 <MudText>Connected: @MilkomedaAddress.Substring(1,6) ...</MudText>
             }
         </MudButton>
-        <MudButton Variant="Variant.Outlined" Class="flex" EndIcon="@MilkomedaBridgeIcons.CardanoIcon">
+        <MudButton Variant="Variant.Outlined" Class="flex" EndIcon="@MilkomedaBridgeIcons.CardanoIcon" Disabled="IsLoading">
             <MudText>Connect to Cardano</MudText>
         </MudButton>
     </div>
 </MudAppBar>
 
 <div class="grid gap-2 grid-cols-12 grid-rows-3">
-    <div class="col-start-1 col-start-6" />
-    <MudCard Class="col-start-4 col-end-10 relative">
+    <MudCard Class="col-start-4 col-end-10 relative mt-20">
         @if (IsLoading)
         {
             <MudCard class="w-[100%] h-[100%] absolute z-100 flex items-center">
@@ -73,6 +72,10 @@
                 }
                 <MudSpacer />
                 <MudButton Variant="Variant.Filled" Color="Color.Primary">Max</MudButton>
+            </div>
+            <div class="flex mt-2 gap-4">
+                <MudTextField Class="basis-3/4" @bind-Value="TargetAddress" InputType="InputType.Text" Label="To Address"
+                    Variant="Variant.Outlined"></MudTextField>
             </div>
         </MudCardContent>
         <MudCardActions>

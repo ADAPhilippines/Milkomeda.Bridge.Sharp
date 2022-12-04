@@ -32,6 +32,7 @@ partial class Index
     private bool IsLoading { get; set; }
     private Dictionary<CardanoAsset, decimal> UserAssetBalances { get; set; } = new Dictionary<CardanoAsset, decimal>();
     private decimal AmountToSend { get; set; }
+    private string? TargetAddress { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,8 +58,8 @@ partial class Index
                 BridgeAssets.Add(new(
                     asset.IdCardano,
                     $"0x{asset.IdMilkomeda}",
-                    await MilkomedaService.GetErc20Name(contractAddress),
-                    await MilkomedaService.GetErc20Symbol(contractAddress)
+                    await MilkomedaService.GetErc20NameAsync(contractAddress),
+                    await MilkomedaService.GetErc20SymbolAsync(contractAddress)
                 ));
             }
         }
@@ -125,15 +126,36 @@ partial class Index
             ArgumentNullException.ThrowIfNull(Configuration);
             ArgumentNullException.ThrowIfNull(MilkomedaAddress);
             ArgumentNullException.ThrowIfNull(MilkomedaService);
+            ArgumentNullException.ThrowIfNull(TargetAddress);
             string? bridgeAddress = Configuration["MilkomedaEvmBridgeAddress"];
             if (bridgeAddress is not null)
-                await MilkomedaService.UnwrapMilkAdaAsync(
-                    bridgeAddress,
-                    MilkomedaAddress,
-                    "addr_test1qrnrqg4s73skqfyyj69mzr7clpe8s7ux9t8z6l55x2f2xuqra34p9pswlrq86nq63hna7p4vkrcrxznqslkta9eqs2nsmlqvnk",
-                    SelectedCardanoAsset.MainchainId,
-                    AmountToSend
-                );
+                if (SelectedCardanoAsset.MainchainId == string.Empty)
+                    await MilkomedaService.UnwrapMilkAdaAsync(
+                        bridgeAddress,
+                        MilkomedaAddress,
+                        TargetAddress,
+                        AmountToSend
+                    );
+                else
+                {
+                    await MilkomedaService.ApprovaErc20Async(
+                        SelectedCardanoAsset.SidechainId,
+                        MilkomedaAddress,
+                        bridgeAddress,
+                        AmountToSend
+                    );
+
+                    int decimals = await MilkomedaService.GetErc20DecimalsAsync(SelectedCardanoAsset.SidechainId);
+
+                    await MilkomedaService.UnwrapMilkTokenAsync(
+                        bridgeAddress,
+                        MilkomedaAddress,
+                        TargetAddress,
+                        SelectedCardanoAsset.MainchainId,
+                        AmountToSend,
+                        decimals
+                    );
+                }
         }
         catch (Exception ex)
         {

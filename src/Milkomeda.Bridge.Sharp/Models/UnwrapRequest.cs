@@ -16,6 +16,6 @@ public record UnwrapRequest
     [Parameter("bytes", "to", 3)]
     public byte[]? To { get; set; }
 
-    [Parameter("uint256", "amount", 3)]
+    [Parameter("uint256", "amount", 4)]
     public BigInteger? Amount { get; set; }
 }
