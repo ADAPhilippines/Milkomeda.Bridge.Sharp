@@ -89,11 +89,11 @@ partial class Index
                 // This is ADA asset
                 if (bridgeAsset.MainchainId == string.Empty)
                 {
-                    UserAssetBalances.Add(bridgeAsset, await MilkomedaService.GetMilkomedaBalance(MilkomedaAddress));
+                    UserAssetBalances.Add(bridgeAsset, await MilkomedaService.GetMilkomedaBalanceAsync(MilkomedaAddress));
                 }
                 else
                 {
-                    UserAssetBalances.Add(bridgeAsset, await MilkomedaService.GetErc20Balance(bridgeAsset.SidechainId, MilkomedaAddress));
+                    UserAssetBalances.Add(bridgeAsset, await MilkomedaService.GetErc20BalanceAsync(bridgeAsset.SidechainId, MilkomedaAddress));
                 }
             }
         }

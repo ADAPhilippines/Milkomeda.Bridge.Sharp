@@ -62,12 +62,12 @@ public class MilkomedaService
             await _ethereumHostProvider.GetProviderSelectedAccountAsync();
     }
 
-    public async Task<decimal> GetErc20Balance(string contractAddress, string walletAddress)
+    public async Task<decimal> GetErc20BalanceAsync(string contractAddress, string walletAddress)
     {
         (string abi, _) = await LoadAbisAsync();
         LoadEvmServiceWeb3();
         BigInteger balanceInWei = await _evmService.CallContractReadFunctionAsync<BigInteger>(contractAddress, abi, "balanceOf", walletAddress);
-        return Web3.Convert.FromWei(balanceInWei);
+        return Web3.Convert.FromWei(balanceInWei, await GetErc20DecimalsAsync(contractAddress));
     }
 
     public async Task<string> GetErc20NameAsync(string contractAddress)
@@ -107,7 +107,7 @@ public class MilkomedaService
         );
     }
 
-    public async Task<decimal> GetMilkomedaBalance(string walletAddress)
+    public async Task<decimal> GetMilkomedaBalanceAsync(string walletAddress)
     {
         IWeb3 web3 = await _ethereumHostProvider.GetWeb3Async();
         HexBigInteger balanceInWei = await web3.Eth.GetBalance.SendRequestAsync(walletAddress);
